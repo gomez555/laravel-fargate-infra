@@ -76,6 +76,26 @@ resource "aws_vpc_endpoint" "ssm" {
   }
 }
 
+resource "aws_vpc_endpoint" "ssmmessages" {
+  count = var.enable_fargate_endpoint ? 1 : 0
+
+  service_name      = "com.amazonaws.${data.aws_region.current.name}.ssmmessages"
+  vpc_endpoint_type = "Interface"
+
+  vpc_id            = aws_vpc.this.id
+
+  subnet_ids        = [for s in aws_subnet.private : s.id]
+
+  security_group_ids = [
+    aws_security_group.web.id,
+  ]
+  private_dns_enabled = true
+
+  tags = {
+    Name = "${aws_vpc.this.tags.Name}-ssmmessages"
+  }
+}
+
 resource "aws_vpc_endpoint" "s3" {
 
   service_name      = "com.amazonaws.${data.aws_region.current.name}.s3"
